@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.Filters;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using SortingService.API.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +17,7 @@ namespace SortingService.API.Filters
 
         public void OnActionExecuted(ActionExecutedContext context)
         {
-            if (context.Exception is HttpResponseException exception)
+            if (context.Exception is SSException exception)
             {
                 context.Result = new ObjectResult(exception.Value)
                 {

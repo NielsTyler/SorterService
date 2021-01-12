@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SortingService.API.Exceptions;
 using System;
 using System.IO;
+using System.Net;
 
 namespace SortingService.API.Helper
 {
@@ -13,7 +14,15 @@ namespace SortingService.API.Helper
         private readonly string _fileName;
         private readonly string _path;
 
-        public string PathToResult => _path; 
+        public string GetPathToResult()
+        {
+            if (!File.Exists(_path))
+            {
+                throw new SSException() { Value = "Result file not found.", Status = (int)HttpStatusCode.NotFound };                 
+            }
+
+            return _path;
+        }
 
         public FileManager(ILogger<FileManager> logger, IConfiguration configuration)
         {
@@ -23,7 +32,7 @@ namespace SortingService.API.Helper
             _fileName = _configuration["ResultFileName"];
             _path = Path.Combine(
                      Directory.GetCurrentDirectory(),
-                     "wwwroot", _fileName);
+                     _fileName);
         }
         public void SaveToFile(int[] data)
         {
@@ -39,7 +48,7 @@ namespace SortingService.API.Helper
                 string errMessage = $"Error writing result to a file. File name: {_fileName}";
                 _logger.LogError(errMessage, ex);
 
-                throw new SSException(errMessage);
+                throw new SSException() { Value = errMessage };
             }
         }                
     }

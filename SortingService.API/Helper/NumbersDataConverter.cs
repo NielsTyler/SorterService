@@ -2,33 +2,39 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace SortingService.API.Helper
 {
-    public class NumbersDataConverter
+    public static class NumbersDataConverter
     {
-        public static int[] ValidateAndConvert(string strNumbers)
+        private static readonly char _separator = ' ';
+        public static int[] Convert(string strNumbers)
         {
             if (!String.IsNullOrEmpty(strNumbers))
             {
                 try
                 {
-                    return strNumbers.Split(' ').Select(Int32.Parse).ToArray();
+                    return strNumbers.Split(_separator).Select(Int32.Parse).ToArray();
 
                 }
-                catch (Exception)
+                catch (OverflowException ex)
                 {
-                    throw new SSException("Validation error. Parameter can not contain not integer items.");
+                    throw new SSException(ex.Message) { Value = "Input string contains value either too large or too small for an Int32.", Status = (int)HttpStatusCode.BadRequest };
+                }
+                catch (Exception ex)
+                {
+                    throw new SSException(ex.Message) { Value = "Input string contains non-integers or in wrong format.", Status = (int)HttpStatusCode.BadRequest };
                 }
             }
     
-            throw new SSException("Required parameter is empty.");
+            throw new SSException() { Value = "Required parameter is empty.", Status = (int)HttpStatusCode.BadRequest };
         }
 
-        public static string Convert(int[] numbers, char separator = ' ')
+        public static string Convert(int[] numbers)
         {
-            return string.Join(separator, numbers);
-        }
+            return string.Join(_separator, numbers);
+        }        
     }    
 }

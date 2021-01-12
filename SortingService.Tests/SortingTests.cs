@@ -7,18 +7,15 @@ namespace SortingService.Tests
 {
     public class SortingTests
     {
-        [Fact]
-        public void BubleSortingTest()
+        [Theory]
+        [InlineData(new int[] { 5, 2, 8, 10, 1 }, new int[] { 1, 2, 5, 8, 10 })]
+        [InlineData(new int[] { 5 }, new int[] { 5 })]
+        public void BubbleSortingTest(int[] heap, int[] expectedArray)
         {
-            ISortingService sorter = new BubleSorter();
-            int[] simpleArray = new int[] { 5, 2, 8, 10, 1 };
-            //int[] sourceSimpleArray = simpleArray;
+            ISortingService sorter = new BubbleSorter();    
+            sorter.Sort(heap);
 
-            int[] expectedSimpleArray = new int[] { 1, 2, 5, 8, 10 };
-
-            sorter.Sort(simpleArray);
-
-            Assert.Equal(simpleArray, expectedSimpleArray);
-        }
+            Assert.Equal(heap, expectedArray);
+        }        
     }
 }

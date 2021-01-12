@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using SortingService.API.Helper;
 using SortingService.API.Interfaces;
 using SortingService.API.Logic;
 using System;
@@ -12,7 +13,8 @@ namespace SortingService.API.App_Start
     {
         public static void AddScope(IServiceCollection services)
         {
-            services.AddScoped<ISortingService, BubleSorter>();            
+            services.AddScoped<FileManager>();
+            services.AddScoped<ISortingService, BubbleSorter>();            
         }
     }
 }

@@ -1,24 +1,27 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SortingService.API.Exceptions;
 using SortingService.API.Helper;
 using SortingService.API.Interfaces;
+using SortingService.API.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace SortingService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class SortingNumbersController : ControllerBase
+    public class SortingProcessorController : ControllerBase
     {        
-        private readonly ILogger<SortingNumbersController> _logger;
+        private readonly ILogger<SortingProcessorController> _logger;
         private readonly ISortingService _sortingService;
         private readonly FileManager _fileManager;
 
-        public SortingNumbersController(ILogger<SortingNumbersController> logger, ISortingService sortingService, FileManager fileManager)
+        public SortingProcessorController(ILogger<SortingProcessorController> logger, ISortingService sortingService, FileManager fileManager)
         {
             _logger = logger;
             _sortingService = sortingService;
@@ -27,19 +30,18 @@ namespace SortingService.Controllers
 
         [HttpPost]
         [Route("order")]
-        public IActionResult Order(string numbers)
+        public IActionResult OrderAndSave([FromBody] NumbersSet data)
         {
             _logger.LogInformation("Start ordering numbers.");
 
-            int[] numbersArray = NumbersDataConverter.ValidateAndConvert(numbers);
+            int[] numbersArray = NumbersDataConverter.Convert(data.Numbers);
 
             if (numbersArray != null && numbersArray.Length > 0)
             {
                 _sortingService.Sort(numbersArray);
             }
             else
-                throw new ArgumentException(
-                    $"Numbers parameter cannot be empty or 0.");
+                throw new SSException() { Value = $"Numbers parameter cannot be empty or 0.", Status = (int)HttpStatusCode.BadRequest };
 
             _fileManager.SaveToFile(numbersArray);
             return Ok();
@@ -52,7 +54,7 @@ namespace SortingService.Controllers
             _logger.LogInformation("Start downloading result.");
 
             var memory = new MemoryStream();
-            string pathToResult = _fileManager.PathToResult;
+            string pathToResult = _fileManager.GetPathToResult();           
 
             using (var stream = new FileStream(pathToResult, FileMode.Open))
             {
