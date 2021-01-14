@@ -36,12 +36,7 @@ namespace SortingService.Controllers
 
             int[] numbersArray = NumbersDataConverter.Convert(data.Numbers);
 
-            if (numbersArray != null && numbersArray.Length > 0)
-            {
-                _sortingService.Sort(numbersArray);
-            }
-            else
-                throw new SSException() { Value = $"Numbers parameter cannot be empty or 0.", Status = (int)HttpStatusCode.BadRequest };
+            _sortingService.Sort(numbersArray);
 
             _fileManager.SaveToFile(numbersArray);
             return Ok();
