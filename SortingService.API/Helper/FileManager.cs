@@ -1,55 +1,70 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SortingService.API.Exceptions;
+using SortingService.API.Interfaces;
 using System;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace SortingService.API.Helper
 {
-    public class FileManager
+    public class FileManager : IFileManager
     {
         private ILogger<FileManager> _logger;
-        private readonly IConfiguration _configuration;
-        private readonly string _fileName;
-        private readonly string _path;
+        private const string FILE_NAME = "result";
+        private const string FILE_EXT = "txt";
 
-        public string GetPathToResult()
+        public FileManager(ILogger<FileManager> logger)
         {
-            if (!File.Exists(_path))
-            {
-                throw new SSException() { Value = "Result file not found.", Status = (int)HttpStatusCode.NotFound };                 
-            }
-
-            return _path;
+            _logger = logger;            
         }
 
-        public FileManager(ILogger<FileManager> logger, IConfiguration configuration)
+        private string GetFileNameByGuid(string token)
         {
-            _logger = logger;
-            _configuration = configuration;
+            return $"{FILE_NAME}_{token}.{FILE_EXT}";
+        }
 
-            _fileName = _configuration["ResultFileName"];
-            _path = Path.Combine(
+        public string GetFilePathByToken(string token)
+        {
+            return Path.Combine(
                      Directory.GetCurrentDirectory(),
-                     _fileName);
+                     GetFileNameByGuid(token));
         }
-        public void SaveToFile(int[] data)
-        {
-            try 
-            {
-                using (var writer = File.CreateText(_path))
-                {
-                    writer.WriteLine(NumbersDataConverter.Convert(data));
-                }
 
-            } catch (Exception ex)
+        public async Task<string> WriteToFile(int[] content)
+        {
+            string fileToken = Guid.NewGuid().ToString();
+            string filePath = GetFilePathByToken(fileToken);
+
+            try
             {
-                string errMessage = $"Error writing result to a file. File name: {_fileName}";
+                using (StreamWriter outputFile = new StreamWriter(filePath))
+                {
+                    await outputFile.WriteAsync(NumbersDataConverter.Convert(content));
+
+                    return fileToken.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                string errMessage = $"Error writing result to a file. File path : \"{filePath}\"";
                 _logger.LogError(errMessage, ex);
 
                 throw new SSException() { Value = errMessage };
             }
-        }                
+        }
+
+        public string GetPathToResult(string token)
+        {
+            string filePath = GetFilePathByToken(token);
+
+            if (!File.Exists(filePath))
+            {
+                throw new SSException() { Value = "Result file not found.", Status = (int)HttpStatusCode.NotFound };
+            }
+
+            return filePath;
+        } 
     }
 }

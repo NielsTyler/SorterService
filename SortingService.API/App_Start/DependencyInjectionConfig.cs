@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using SortingService.API.Helper;
 using SortingService.API.Interfaces;
 using SortingService.API.Logic;
@@ -13,8 +14,9 @@ namespace SortingService.API.App_Start
     {
         public static void AddScope(IServiceCollection services)
         {
-            services.AddScoped<FileManager>();
-            services.AddScoped<ISortingService, BubbleSorter>();            
+            services.AddScoped<IFileManager, FileManager>();
+            services.AddScoped<ISortingService, BubbleSorter>();
+            services.AddMediatR(typeof(Startup));
         }
     }
 }

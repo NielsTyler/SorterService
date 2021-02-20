@@ -11,7 +11,7 @@ namespace SortingService.API.Models
         private const string onlyFoIntegersConstraint = @"^\d+( \d+)*$";
 
         [Required]
-        [RegularExpression(onlyFoIntegersConstraint, ErrorMessage = "Data string in wrong format or contains non-integer items.(Should be string of integer with spaces)")]
+        [RegularExpression(onlyFoIntegersConstraint, ErrorMessage = "Data string in wrong format or contains non-integer items(Must be a string of integers separated by spaces).")]
         public string Numbers { get; set; }
     }
 }

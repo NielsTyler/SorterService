@@ -25,7 +25,7 @@ namespace SortingService.API.Helper
                 }
                 catch (Exception ex)
                 {
-                    throw new SSException(ex.Message) { Value = "Input string contains non-integers or data in wrong format .", Status = (int)HttpStatusCode.BadRequest };
+                    throw new SSException(ex.Message) { Value = "Input string contains non-integers or data in wrong format .", Status = (int)HttpStatusCode.Conflict };
                 }
             }
     

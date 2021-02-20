@@ -32,5 +32,15 @@ namespace SortingService.Tests
 
             Assert.Equal(heap, expectedArray);
         }
+
+        [Fact]
+        public void EmptyParameter_bubbleSort()
+        {
+            ISortingService sorter = new BubbleSorter();
+            sorter = new BubbleSorter();
+            int[] param = null;
+
+            Assert.Throws<ArgumentException>("data", () => sorter.Sort(param));
+        }
     }
 }

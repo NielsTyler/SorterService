@@ -32,7 +32,7 @@ namespace SortingService.Tests
         {
             string res = NumbersDataConverter.Convert(new int[] { 1, 2, 3, 5, 7, 110 });
 
-            Assert.Equal(res, "1 2 3 5 7 110");
+            Assert.Equal("1 2 3 5 7 110", res );
         }
     }
 }

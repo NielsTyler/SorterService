@@ -11,6 +11,11 @@ namespace SortingService.API.Logic
     {
         public void Sort(int[] data)
         {
+            if (data == null)
+            {
+                throw new ArgumentException("You've passed null in a parameter.", nameof(data));
+            }
+
             bool swapped = true;
             int tmp;
 

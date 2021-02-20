@@ -1,11 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SortingService.API.Commands;
 using SortingService.API.Exceptions;
 using SortingService.API.Helper;
 using SortingService.API.Interfaces;
 using SortingService.API.Models;
+using SortingService.API.Queries;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,42 +18,44 @@ using System.Threading.Tasks;
 namespace SortingService.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    public class SortingProcessorController : ControllerBase
-    {        
-        private readonly ILogger<SortingProcessorController> _logger;
-        private readonly ISortingService _sortingService;
-        private readonly FileManager _fileManager;
+    [Route("api/v{version:apiVersion}/SortingProcessor")]
+    [ApiVersion("1.0")]
+    [ApiVersion("2.0")]
+    public partial class SortingProcessorController : ControllerBase
+    {                       
+        private readonly IMediator _mediator;
 
-        public SortingProcessorController(ILogger<SortingProcessorController> logger, ISortingService sortingService, FileManager fileManager)
+        public SortingProcessorController(IMediator mediator)
         {
-            _logger = logger;
-            _sortingService = sortingService;
-            _fileManager = fileManager;
+            _mediator = mediator;
         }
 
         [HttpPost]
         [Route("order")]
-        public IActionResult OrderAndSave([FromBody] NumbersSet data)
+        [MapToApiVersion("1.0")]
+        public async Task<IActionResult> OrderAndSave([FromBody] NumbersSet data)
         {
-            _logger.LogInformation("Start ordering numbers.");
-
-            int[] numbersArray = NumbersDataConverter.Convert(data.Numbers);
-
-            _sortingService.Sort(numbersArray);
-
-            _fileManager.SaveToFile(numbersArray);
-            return Ok();
+            var sortingCommand = new SortingNumbersCommand(data.Numbers);
+            string fileToken = await _mediator.Send<string>(sortingCommand); 
+                      
+            return Ok(fileToken);
         }
 
         [HttpGet]
-        [Route("result")]
-        public async Task<IActionResult> DownloadResult()
+        [MapToApiVersion("1.0")]
+        public async Task<IActionResult> GetResultFile([FromHeader, Required]Guid fileToken)
         {
-            _logger.LogInformation("Start downloading result.");
+            var query2 = new GetFilePathByTokenQuery(fileToken);
+            string pathToFile = await _mediator.Send(query2);
+
+            if (String.IsNullOrEmpty(pathToFile))
+                return NotFound();
+
+            var query = new GetFileQuery();
+            var filePath = await _mediator.Send(query);
 
             var memory = new MemoryStream();
-            string pathToResult = _fileManager.GetPathToResult();           
+            string pathToResult = filePath;
 
             using (var stream = new FileStream(pathToResult, FileMode.Open))
             {

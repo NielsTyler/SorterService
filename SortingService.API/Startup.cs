@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -31,6 +32,12 @@ namespace SortingService
             services.AddControllers(options =>
                 options.Filters.Add(new HttpResponseExceptionFilter()));
             services.AddControllers();
+            services.AddApiVersioning(options => {
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.DefaultApiVersion = ApiVersion.Default;
+                options.ApiVersionReader = new HeaderApiVersionReader("X-Version");//MediaTypeApiVersionReader("X-version");
+                options.ReportApiVersions = true;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
